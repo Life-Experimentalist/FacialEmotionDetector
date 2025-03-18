@@ -27,7 +27,6 @@ ENV/
 data/
 data.txt
 model
-face_landmarker.task
 temp_extract/
 
 # IDE
