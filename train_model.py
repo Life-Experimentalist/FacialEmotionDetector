@@ -1,9 +1,9 @@
 import pickle
 
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.model_selection import train_test_split
 
 # Load data from the text file
 data_file = "data.txt"
@@ -35,6 +35,6 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy * 100:.2f}%")
 print(confusion_matrix(y_test, y_pred))
 
-with open('./model', 'wb') as f:
+with open("./model.pkl", "wb") as f:
     pickle.dump(rf_classifier, f)
 

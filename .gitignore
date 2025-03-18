@@ -25,6 +25,7 @@ ENV/
 
 # Project specific
 data/
+datum/
 data.txt
 model
 temp_extract/

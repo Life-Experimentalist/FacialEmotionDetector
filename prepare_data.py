@@ -93,9 +93,13 @@ for emotion_indx, emotion in enumerate(sorted(os.listdir(train_data_dir))):
 
             face_landmarks = get_face_landmarks(image)
 
-            if len(face_landmarks) == 1404:
+            if len(face_landmarks) >= 1404:
                 face_landmarks.append(int(emotion_indx))
                 output.append(face_landmarks)
+            else:
+                print(
+                    f"Could not extract face landmarks for {image_path} and only got {len(face_landmarks)} landmarks"
+                )
         except Exception as e:
             print(f"Error processing {image_path}: {str(e)}")
 
@@ -105,3 +109,4 @@ if output:
     print(f"Processed {len(output)} images successfully")
 else:
     print("No valid face landmarks were extracted. Check the data directory structure.")
+    print()
