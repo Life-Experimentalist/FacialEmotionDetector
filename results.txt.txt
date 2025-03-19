@@ -1,0 +1,2 @@
+Emotion counts: {}
+Total frames with emotions detected: 0

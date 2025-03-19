@@ -124,7 +124,7 @@ while ret:
     else:
         cv2.putText(
             frame,
-            f"Need 1404 landmarks, got: {len(face_landmarks)}",
+            f"Need atleast 1404 landmarks, got: {len(face_landmarks)}",
             (10, frame.shape[0] - 30),
             cv2.FONT_HERSHEY_SIMPLEX,
             0.7,

@@ -21,6 +21,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import cv2
 
 from utils import (
+    CROP_FACE_ONLY,
     EMOTIONS,
     IMAGES_PER_CLASS,
     detect_and_crop_face,
@@ -43,6 +44,14 @@ def create_img():
     # Define emotions to match prepare_data.py structure
     emotions = EMOTIONS
     target_images = IMAGES_PER_CLASS
+
+    # Inform user about the cropping mode
+    if CROP_FACE_ONLY:
+        print_info("Mode: Saving only the cropped face region")
+    else:
+        print_info(
+            "Mode: Saving the full frame (face detection only used for verification)"
+        )
 
     cap = cv2.VideoCapture(0)
     # Loop over each emotion
@@ -74,13 +83,27 @@ def create_img():
         counter = 0
         while counter < target_images:
             ret, frame = cap.read()
-            face = detect_and_crop_face(frame)
-            if face is not None:
-                cv2.imshow("Face", face)
-                cv2.imwrite(os.path.join(emotion_dir, f"{counter}.jpg"), face)
+            if not ret:
+                print_info("Failed to capture frame from camera")
+                continue
+
+            # Get the image to save (either cropped face or full frame with face detection)
+            processed_frame = detect_and_crop_face(frame)
+
+            if processed_frame is not None:
+                # When not cropping, detect_and_crop_face returns the full frame even if no face is found
+                # But if cropping is enabled and no face is found, it returns None
+                display_frame = processed_frame if CROP_FACE_ONLY else frame
+                cv2.imshow("Processed Image", display_frame)
+
+                # Save the processed frame
+                cv2.imwrite(
+                    os.path.join(emotion_dir, f"{counter}.jpg"), processed_frame
+                )
                 print_info(f"Saved {emotion} image {counter}")
                 counter += 1
             else:
+                # This case only happens when CROP_FACE_ONLY=True and no face is detected
                 print_info("No face detected in current frame.")
                 cv2.putText(
                     frame,
@@ -91,6 +114,7 @@ def create_img():
                     (0, 0, 255),
                     2,
                 )
+
             cv2.imshow("frame", frame)
             cv2.waitKey(25)
     cap.release()

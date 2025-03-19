@@ -26,6 +26,8 @@ MODELS_DIR = os.getenv(
 # Parse emotions from comma-separated list
 emotions_str = os.getenv("EMOTIONS", "angry,disgust,fear,happy,neutral,sad,surprise")
 EMOTIONS = [e.strip() for e in emotions_str.split(",")]
+# Whether to crop only the face region or use the entire frame
+CROP_FACE_ONLY = os.getenv("CROP_FACE_ONLY", "False").lower() in ("true", "1", "t")
 
 # Initialize FaceLandmarker with the relative model path
 options = python.vision.FaceLandmarkerOptions(
@@ -159,9 +161,34 @@ def load_face_cascade():
 
 
 def detect_and_crop_face(frame):
-    # First try MediaPipe FaceLandmarker to detect facial landmarks and compute a bounding box.
+    """
+    Detect and optionally crop the face from a frame.
+    If CROP_FACE_ONLY is True, returns only the face region.
+    Otherwise, returns the full frame with face detection info.
+    """
     if frame is None or frame.size == 0:
         return None
+
+    # If we don't need to crop, return the full frame but still detect the face
+    if not CROP_FACE_ONLY:
+        # We still want to check if a face is detected
+        img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
+        results = landmarker.detect(mp_image)
+
+        if not results.face_landmarks:
+            # Try Haar cascade as fallback
+            cascade = load_face_cascade()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+            if len(faces) == 0:
+                print("No face detected in frame, but returning full frame anyway.")
+            else:
+                print("Face detected using Haar cascade, returning full frame.")
+
+        return frame  # Return the full frame regardless
+
+    # If CROP_FACE_ONLY is True, proceed with original cropping logic
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
     results = landmarker.detect(mp_image)
